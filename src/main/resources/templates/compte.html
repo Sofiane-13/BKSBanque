@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html
+xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<title>BKS Banque</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway"/>
+<style>
+body,h1,h2{font-family: "Raleway", sans-serif}
+body, html {height: 100%}
+p {line-height: 2}
+.bgimg, .bgimg2 {
+    min-height: 100%;
+    background-position: center;
+    background-size: cover;
+}
+.bgimg {background-image: url("http://www.meilleurtaux.com/images/actu/20150115_role-banque-commerciale.jpg")}
+.bgimg2 {background-image: url("http://fr.cdn.v5.futura-sciences.com/buildsv6/images/largeoriginal/c/6/5/c656f2f71a_50030453_fotolia-20091712-s-page50.jpg")}
+</style>
+<body>
+
+
+<header class="w3-display-container w3-wide bgimg w3-grayscale-min" id="home">
+  <div class="w3-display-middle w3-text-white w3-center">
+    <h1 class="w3-animate-top">BKS Banque</h1>
+    <h2 class="w3-animate-bottom"><b >Votre argent est en securité</b></h2>
+  </div>
+  <div class="w3-panel w3-pale-blue w3-display-topright">
+  <ul><li><a th:href="@{/login?logout}"><b>Logout</b></a></li></ul>
+  </div>
+</header>
+
+
+<div class="w3-bottom w3-hide-small">
+  <div class="w3-bar w3-white w3-center w3-padding w3-opacity-min w3-hover-opacity-off">
+    <a href="#home" style="width:20%" class="w3-bar-item w3-button">Home</a>
+    <a href="#numcpt" style="width:20%" class="w3-bar-item w3-button">Votre numero de compte</a>
+    <a href="#operation" style="width:20%" class="w3-bar-item w3-button" sec:authorize="hasRole('ROLE_ADMIN')">Effectuer une operation</a>
+    <a href="#compte" style="width:20%" class="w3-bar-item w3-button">Votre compte</a>
+    <a href="#listOperation" style="width:20%" class="w3-bar-item w3-button w3-hover-black">Liste des operation</a>
+  </div>
+</div>
+
+<!-- Entrer le numero de compte -->
+<div  class="w3-row" id="numcpt">
+<br/>
+  <div class="w3-content w3-animate-right">
+    <h1  class="w3-blue w3-round-xlarge" style="text-shadow:1px 1px 0 #444"><b>Taper le numero de compte</b></h1>
+    <div>
+    
+	<form th:action="@{consultercompte}" method="get">
+		<div>
+			<label> Code du compte :</label>
+			<input type="text" name="codeCompte" th:value="${codeCompte}"/>
+			<button type="submit" class="w3-button w3-round w3-red w3-opacity w3-hover-opacity-off" style="padding:8px 60px">ok</button>
+		</div>
+	</form>
+	<div class="w3-panel w3-red" th:if="${exception}" th:text="${exception.message}">
+	</div>
+ </div>
+    </div>
+    <br/>
+</div>
+
+<!-- Effectuer une operation -->
+<div  class="w3-row" id="operation" th:if="${compte}">
+<br/>
+<div class="w3-content w3-animate-left" sec:authorize="hasRole('ROLE_ADMIN')">
+<h1  class="w3-blue w3-round-xlarge" style="text-shadow:1px 1px 0 #444"><b>Effectuer une operation :</b></h1>
+	<div class="w3-panel w3-light-blue">
+    	<form th:action="@{saveOperation}" method="post">
+	    	<div>
+		    	<input type="hidden" name="codeCompte" th:value="${codeCompte}"/>
+	    	</div>
+	    	<div>
+		    	<input type="radio" name="typeOperation" value="VERS" checked="checked" onchange="document.getElementById('forvirement').style.display='none'"/>
+		    	<label>Versement</label>
+		    	<input type="radio" name="typeOperation" value="RETR" onchange="document.getElementById('forvirement').style.display='none'"/>
+		    	<label>Retrait</label>
+	    		<input type="radio" name="typeOperation" value="VIRE" onchange="document.getElementById('forvirement').style.display='block'"/>
+		    	<label>Virement</label>
+	    	</div>
+	    	<div>
+	    	
+        	 <div id="forvirement" style="display:none"><label>Vers :</label><input type="text" name="codeCompte2"/></div>
+	       	<label>Montant :</label><input type="text" name="montant"/>
+	         
+	    	</div>
+	    	<div class="w3-panel w3-red"  th:text="${#httpServletRequest.getParameter('error')}"></div>
+	    	<button type="submit" class="w3-button w3-round w3-red w3-opacity w3-hover-opacity-off" style="padding:8px 60px">Save</button>
+	       	</form>
+    </div>
+    </div>
+    <br/>
+</div>
+<!-- information du compte -->
+<div  class="w3-row" id="compte" th:if="${compte}">
+  <div class="w3-content w3-animate-right">
+    <h1  class="w3-blue w3-round-xlarge" style="text-shadow:1px 1px 0 #444"><b>Votre Compte :</b></h1>
+   
+	 <div class="w3-panel w3-pink">
+	 <div>
+	 	<label>Nom :</label>
+	 	<label th:text="${compte.client.nom}"></label>
+	 </div>
+	 <div>
+	 	<label>Email :</label>
+	 	<label th:text="${compte.client.email}"></label>
+	 </div>
+   </div>	 
+   <div class="w3-panel w3-blue">
+	  <div>
+	 	<label>Solde :</label>
+	 	<label th:text="${compte.solde}"></label>
+	 </div>
+	  <div>
+	 	<label>Date creation :</label>
+	 	<label th:text="${compte.dateCreation}"></label>
+	 </div>
+	 <div>
+	 	<label>Type</label>
+	 	<label th:text="${compte.class.simpleName}"></label>
+	 </div>
+	  <div th:if="${compte.class.simpleName=='CompteCourant'}">
+	 	<label>Decouvert</label>
+	 	<label th:text="${compte.decouvert}"></label>
+	 </div>
+	  <div th:if="${compte.class.simpleName=='CompteEpargne'}">
+	 	<label>Taux:</label>
+	 	<label th:text="${compte.taux}"></label>
+	 </div>
+	 </div>
+  </div>
+  <br/>
+</div>
+
+<!-- Liste des operations -->
+<div  class="w3-row" id="listOperation" th:if="${compte}">
+	<div class="w3-content w3-animate-left">
+	 <h1  class="w3-blue w3-round-xlarge" style="text-shadow:1px 1px 0 #444"><b>Liste des operations :</b></h1>
+	<div class="w3-panel w3-light-blue">
+		<table class="w3-table">
+			<tr>
+			  <th>Numero</th>
+			  <th>Type</th>
+			  <th>Date</th>
+	  		  <th>Montant</th>
+			</tr>
+			<tr th:each="o:${listOperation}">
+			  <td th:text="${o.numero}"></td>
+			  <td th:text="${o.class.simpleName}"></td>
+			  <td th:text="${o.dateoperation}"></td>
+			  <td th:text="${o.montant}"></td>
+			</tr>
+		</table>
+		<div class="w3-bar w3-green w3-round-xxlarge" >
+				<a class="w3-bar-item w3-button " th:each="p,status:${pages}"	  th:href="@{/consultercompte(codeCompte=${codeCompte},page=${status.index})}" th:text="${status.index}"></a>
+				
+		</div>
+	</div>
+	</div>
+</div>
+
+
+
+
+
+<footer class="w3-center w3-black w3-padding-16">
+  <p>Created by <a href="https://www.w3schools.com/w3css/default.asp" title="BKS Banque" target="_blank" class="w3-hover-text-green">Soufyane BELHADJ KACEM</a></p>
+</footer>
+<div class="w3-hide-small" style="margin-bottom:32px"> </div>
+
+</body>
+</html>
